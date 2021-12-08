@@ -1,12 +1,12 @@
 # Running the App
 
-execute the command
+Execute the command
 
 ```shell-session
 yarn install
 ```
 
-after it finishes, run
+After it finishes, run
 
 ```shell-session
 yarn run serve
