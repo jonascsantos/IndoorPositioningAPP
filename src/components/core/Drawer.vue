@@ -69,12 +69,6 @@ export default {
         icon: 'mdi-view-dashboard',
         text: 'Dashboard'
       },
-
-      {
-        to: '/maps',
-        icon: 'mdi-map-marker',
-        text: 'Map'
-      },
       {
         to:'/table-list/USER1',
         icon: 'mdi-account-search',
