@@ -62,7 +62,7 @@ import {
 
 export default {
   data: () => ({
-    logo: './img/logo.jpg',
+    logo: '/img/logo.jpg',
     links: [ 
       {
         to: '/dashboard',
