@@ -55,41 +55,28 @@
 
 <script>
 // Utilities
-import {
-  mapMutations,
-  mapState
-} from 'vuex'
+import {  mapMutations, mapState} from 'vuex'
+import _ from 'lodash'
+
+const normalize = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
 export default {
   data: () => ({
     logo: './img/logo.jpg',
-    links: [ 
-      {
-        to: '/dashboard',
-        icon: 'mdi-view-dashboard',
-        text: 'Dashboard'
-      },
-
-      {
-        to: '/maps',
-        icon: 'mdi-map-marker',
-        text: 'Map'
-      },
-      {
-        to:'/table-list/USER1',
-        icon: 'mdi-account-search',
-        text: 'USER1 Historical Data'
-      },
-      {
-        to:'/table-list/USER2',
-        icon: 'mdi-account-search',
-        text: 'USER2 Historical Data'
-      },
-    ],
     responsive: false
   }),
   computed: {
     ...mapState('app', ['image', 'color']),
+
+    ...mapState(['sensors']),
+
+    ...mapState('filter', {
+      filter: ({ value }) => value
+    }),
+
+    sensorList () {
+      return _.filter(this.sensors, ({ name }) => normalize(name).match(new RegExp(normalize(this.filter))))
+    },
     inputValue: {
       get () {
         return this.$store.state.app.drawer
@@ -97,6 +84,30 @@ export default {
       set (val) {
         this.setDrawer(val)
       }
+    },
+    links() {
+      let linksArray = [
+        {
+          to: '/dashboard',
+          icon: 'mdi-view-dashboard',
+          text: 'Dashboard'
+        },
+        // {
+        //   to: '/maps',
+        //   icon: 'mdi-map-marker',
+        //   text: 'Map'
+        // }
+      ]
+
+      this.sensorList.forEach(sensor => {
+        linksArray.push({
+          to:'/table-list/' + sensor.id,
+          icon: 'mdi-account-search',
+          text: 'Device ' + sensor.id
+        })
+      });
+
+      return linksArray
     },
     items () {
       return this.$t('Layout.View.items')

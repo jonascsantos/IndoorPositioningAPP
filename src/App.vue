@@ -9,18 +9,17 @@
 </template>
 
 <script>
-import { mapMutations, mapActions } from 'vuex'
+import { mapMutations, mapActions, mapGetters } from 'vuex'
 
 export default {
   mounted () {
-    this.fetchSensor('USER1')
-    this.fetchSensor('USER2')
+    this.fetchNewSensors()
   },
 
   methods: {
     ...mapMutations('filter', ['setFilter']),
 
-    ...mapActions(['fetchSensor'])
+    ...mapActions(['fetchSensor', 'fetchNewSensors'])
   }
 }
 </script>
