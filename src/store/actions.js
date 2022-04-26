@@ -8,7 +8,7 @@ export default {
       dispatch('fetchSensor', snapshot.key);
     });
   },
-  fetchSensor ({ commit }, sensorName) {
+  fetchSensor ({ commit, dispatch }, sensorName) {
     firebase.database().ref(sensorName)
       .on('value',
         (snapshot) => {
@@ -20,5 +20,62 @@ export default {
 
         (err) => console.error(err)
       )
+    
+    firebase.database().ref(sensorName + "/SCAN/data")
+      .on('child_added',
+        (snapshot) => {
+          const name = snapshot.key;
+          if (name) {
+            commit('newScannedRoom', { sensorName: sensorName, roomName : name })
+            dispatch('fetchScannedRoom', { sensorName: sensorName, roomName : name });
+          }
+        },
+        (err) => console.error(err)
+      )
+
+    firebase.database().ref(sensorName + "/SCAN/data")
+      .on('child_removed',
+        (snapshot) => {
+          const name = snapshot.key;
+          if (name) {
+            commit('deleteScannedRoomData', { roomName : name })
+          }
+        },
+        (err) => console.error(err)
+      )
+  },
+  fetchScannedRoom ({ commit }, { sensorName, roomName} ) {
+    firebase.database().ref(sensorName + "/SCAN/data/" + roomName)
+      .on('value',
+        (snapshot) => {
+          const value = snapshot.val();
+          if (value) {
+            commit('receiveScannedRoomData', { roomName: roomName, val: value })
+          }
+        },
+
+        (err) => console.error(err)
+      )
+  },
+  outputScanData ({ commit }, { sensorName } ) {
+    let scanArray = []
+    firebase.database().ref(sensorName + "/SCAN/data")
+    .once('value',
+      (snapshot) => {
+        snapshot.forEach(function(childSnapshot) {
+          const childData = childSnapshot.val();
+          let dataArray = _.map(childData)
+          dataArray = dataArray.map(({ data: data, ...rest }) => ({ data, ...rest })).map(data => (data.data))
+          scanArray = scanArray.concat(dataArray) 
+        })
+
+        if (window) {
+          window.navigator.clipboard.writeText(scanArray.join(''));
+        }
+      },
+      (err) => console.error(err)
+    )
+
+    
   }
 }

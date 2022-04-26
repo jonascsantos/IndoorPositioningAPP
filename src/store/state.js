@@ -16,5 +16,8 @@ export default {
     //   readings: [],
     //   status: 0
     // }
+  },
+  rooms: {
+    
   }
 }

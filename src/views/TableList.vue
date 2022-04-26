@@ -51,6 +51,57 @@
           </v-form>
         </material-card>
         <material-card
+          color="pink"
+          title="Scanned Rooms"
+          text="Data about the scanned rooms"
+        >
+          <v-container fluid grid-list-md>
+            <v-layout row wrap>
+              <v-flex 
+                v-for="({ id, name, readings }, key) in roomsList"
+                :key="key" 
+                d-flex xs12 sm6 md4
+              >
+                <v-card outlined>
+                  <v-card-title primary class="title">{{name}}</v-card-title>
+                  <v-card-text>Total Scan Samples: <b>{{readings.length}}</b></v-card-text>
+                  <v-card-actions>
+                    <v-btn
+                      color="error"
+                      @click="deleteRoom(name)"
+                    >
+                      Delete Room
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-flex>
+              
+            </v-layout>
+          </v-container>
+        </material-card>
+        <material-card
+          color="deep-purple"
+          title="Train Model"
+          text="Generate the machine learning converter and classifier."
+        >
+          <div>
+            <v-btn
+              :disabled="roomsList.length < 2"
+              color="blue-grey"
+              class="ma-2 white--text"
+              @click="generateCode"
+            >
+              Generate Code
+              <v-icon
+                right
+                dark 
+              >
+                mdi-auto-fix
+              </v-icon>
+            </v-btn>
+          </div>
+        </material-card>
+        <material-card
           color="green"
           title="Device Setup"
           text="Configuration..."
@@ -116,7 +167,7 @@
         >
           mdi-bell-plus
         </v-icon>
-        <div>Scan <b>{{scanning ? 'Started' : 'Stopped'}}</b></div>
+        <div>{{alert.text}} <b>{{alert.secondaryText}}</b></div>
         <v-icon
           size="16"
           @click="snackbar = false"
@@ -129,8 +180,11 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState, mapActions } from 'vuex'
 import firebase from '@/utils/firebase'
+import _ from 'lodash'
+
+const normalize = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
 export default {
   props: {
@@ -172,11 +226,22 @@ export default {
     bottom: false,
     left: false,
     right: false,
-    snackbar: false
+    snackbar: false,
+    alert: ''
   }),
 
   computed: {
     ...mapGetters(['getSensorById']),
+
+    ...mapState(['rooms']),
+
+    ...mapState('filter', {
+      filter: ({ value }) => value
+    }),
+
+    roomsList () {
+      return _.filter(this.rooms, ({ name }) => normalize(name).match(new RegExp(normalize(this.filter))))
+    },
 
     sensor () {
       return this.getSensorById(this.$route.params.sensorId)
@@ -205,6 +270,8 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['outputScanData']),
+
     timestampToDate( timestamp ) {
       if (!timestamp) {
         return
@@ -233,6 +300,16 @@ export default {
         this.scanFirebase(this.room, false);
       }
     },
+    generateCode() {
+      this.outputScanData({
+        sensorName: this.sensor.id
+      });
+      this.snack('success')
+      this.alert = { 
+        text: 'Scan data copied to clipboard!',
+        secondaryText: '' 
+      }
+    },
     addFile() {
       this.binFile = this.$refs.file.files[0];
     },
@@ -257,6 +334,8 @@ export default {
 
       dbRef.set(metadata).then(function() {
         that.snack(running ? 'success' : 'error')
+        that.alert = { text: "Scan",
+                       secondaryText: running ? 'Started' : 'Stopped' }
       })
       .catch(function(error) {
         console.log("Error: " + error.message);
@@ -271,6 +350,20 @@ export default {
       };
       dbRef.set(metadata).then(function() {
         window.alert("Success!");
+      })
+      .catch(function(error) {
+        console.log("Error: " + error.message);
+      });
+    },
+    deleteRoom( roomName ) {
+      var dbRef = firebase.database().ref(this.sensor.id +'/SCAN/data/' + roomName);
+      
+      let that = this
+      
+      dbRef.remove().then(function() {
+        that.snack('error')
+        that.alert = { text: roomName,
+                       secondaryText: 'DELETED' }
       })
       .catch(function(error) {
         console.log("Error: " + error.message);
