@@ -107,20 +107,35 @@
           text="Configuration..."
         >
           <div>
-            <input type="file" @change="addFile" ref="file">
-            <v-btn
-              color="blue-grey"
-              class="ma-2 white--text"
-              @click="uploadFile"
-            >
-              Upload
-              <v-icon
-                right
-                dark 
-              >
-                mdi-cloud-upload
-              </v-icon>
-            </v-btn>
+            <v-card>
+              <v-card-title primary class="title">
+                Current Firmware: {{currentFirmware.filename}}
+              </v-card-title>
+              
+              <v-card-text> 
+                Version {{currentFirmware.version}}
+              </v-card-text>
+              
+              <v-card-text> 
+                <input type="file" @change="addFile" ref="file">
+              </v-card-text>
+              
+              <v-card-actions>
+                <v-btn
+                  color="blue-grey"
+                  class="white--text"
+                  @click="uploadFile"
+                >
+                  Upload
+                  <v-icon
+                    right
+                    dark 
+                  >
+                    mdi-cloud-upload
+                  </v-icon>
+                </v-btn>
+              </v-card-actions>
+            </v-card>
           </div>
         </material-card>
         <material-card
@@ -211,6 +226,8 @@ export default {
     valid: false,
     room: '',
     scanning: false,
+    currentFirmwareFilename: '',
+    currentFirmwareVersion: '',
     roomRules: [
       v => !!v || 'Room name is required'
     ],
@@ -267,7 +284,31 @@ export default {
           )
       }
       return this.scanning;
-    }
+    },
+    currentFirmware() {
+      if (this.sensor) {
+        var dbRef = firebase.database()
+          .ref(this.sensor.id +'/FIRMWARE/CurrentFirmware')
+          .on('value',(snapshot) => {
+            const value = snapshot.val();
+            if (value && ((value.filename != this.currentFirmwareFilename) ||
+                           value.version != this.currentFirmwareVersion)) {
+              this.currentFirmwareVersion = value.version;
+              this.currentFirmwareFilename = value.filename;
+              
+            } 
+          },
+            (err) => console.error(err)
+          )
+      }
+
+      let obj = {
+        filename: this.currentFirmwareFilename,
+        version: this.currentFirmwareVersion
+      };
+
+      return obj;
+    },
   },
   methods: {
     ...mapActions(['outputScanData']),
@@ -318,9 +359,13 @@ export default {
 
       let that = this;
 
+      let version = this.currentFirmwareVersion && !isNaN(this.currentFirmwareVersion) && 
+                    this.currentFirmwareFilename === this.binFile.name  ? 
+                      (+this.currentFirmwareVersion + 1).toString() : "1"
+
       storageRef.put(this.binFile).then(function(snapshot) {
         storageRef.getDownloadURL().then(function(url) {
-          that.saveMetadata(that.sensor.id, that.binFile.name, "WifiScan", url);
+          that.saveMetadata(that.sensor.id, that.binFile.name, version , url);
         })
       });
     },
@@ -342,11 +387,11 @@ export default {
       });
     },
     saveMetadata( sensorName, filename, version, url) {
-      var dbRef = firebase.database().ref(sensorName +'/FIRMWARE/' + version);
+      var dbRef = firebase.database().ref(sensorName +'/FIRMWARE/WifiScan');
       var metadata = {
         filename: filename,
         url: url,
-        version: "1"
+        version: version
       };
       dbRef.set(metadata).then(function() {
         window.alert("Success!");
