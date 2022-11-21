@@ -13,8 +13,8 @@ export default {
       .on('value',
         (snapshot) => {
           const value = snapshot.val();
-          if (value) {
-            commit('receiveSensor', { sensorName, val: value })
+          if (value && value.TRACK_POSITION) {
+            commit('receiveSensor', { sensorName, val: value.TRACK_POSITION })
           }
         },
 

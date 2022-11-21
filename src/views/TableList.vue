@@ -146,7 +146,6 @@
           <v-data-table
             :headers="headers"
             :items="items"
-            hide-actions
           >
             <template
               slot="headerCell"
