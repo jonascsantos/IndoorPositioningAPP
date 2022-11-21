@@ -12,7 +12,36 @@
         md12
       >
         <material-card
-          color="purple"
+          color="#5EBA93"
+          dark
+          title="Indoor Positioning System Start-Stop"
+          text="Turn On or Off the device tracking"
+          :loading="true"
+        >
+          <v-layout justify-center wrap>
+            <v-btn
+              :disabled="systemStatus"
+              color="success"
+              large
+              class="mr-4"
+              @click="startSystem"
+            >
+              Start
+            </v-btn>
+            <v-btn
+              :disabled="!indoorPositioningSytem"
+              color="error"
+              large
+              class="mr-4"
+              @click="stopSystem"
+            >
+              Stop
+            </v-btn>
+          </v-layout>
+        </material-card>
+
+        <material-card
+          color="#5EBA93"
           title="Room Scan"
           text="Enter the room name, hit start, and walk around :D..."
           :loading="true"
@@ -51,7 +80,7 @@
           </v-form>
         </material-card>
         <material-card
-          color="pink"
+          color="#5EBA93"
           title="Scanned Rooms"
           text="Data about the scanned rooms"
         >
@@ -80,7 +109,7 @@
           </v-container>
         </material-card>
         <material-card
-          color="deep-purple"
+          color="#5EBA93"
           title="Train Model"
           text="Generate the machine learning converter and classifier."
         >
@@ -102,7 +131,7 @@
           </div>
         </material-card>
         <material-card
-          color="green"
+          color="#5EBA93"
           title="Device Setup"
           text="Configuration..."
         >
@@ -139,7 +168,7 @@
           </div>
         </material-card>
         <material-card
-          color="green"
+          color="#5EBA93"
           title="Historical data of User Location"
           text="Data collected every 5 seconds..."
         >
@@ -225,6 +254,7 @@ export default {
     valid: false,
     room: '',
     scanning: false,
+    indoorPositioningSytem: false,
     currentFirmwareFilename: '',
     currentFirmwareVersion: '',
     roomRules: [
@@ -284,6 +314,24 @@ export default {
       }
       return this.scanning;
     },
+    systemStatus() {
+      if (this.sensor) {
+        var dbRef = firebase.database()
+          .ref(this.sensor.id +'/TRACK_POSITION/STATUS')
+          .on('value',(snapshot) => {
+            const value = snapshot.val();
+            if (value && value.running) {
+              this.indoorPositioningSytem = true;
+              this.room = value.room
+            } else {
+              this.indoorPositioningSytem = false;
+            }
+          },
+            (err) => console.error(err)
+          )
+      }
+      return this.indoorPositioningSytem;
+    },
     currentFirmware() {
       if (this.sensor) {
         var dbRef = firebase.database()
@@ -330,6 +378,16 @@ export default {
 
       return time;
     },
+    startSystem () {
+      if(!this.indoorPositioningSytem) {
+        this.changeSystemStatus(true); 
+      }
+    },
+    stopSystem() {
+      if(this.indoorPositioningSytem) {
+        this.changeSystemStatus(false);
+      }
+    },
     startScan () {
       if(this.$refs.form.validate() && !this.scanning) {
         this.scanFirebase(this.room, true); 
@@ -366,6 +424,22 @@ export default {
         storageRef.getDownloadURL().then(function(url) {
           that.saveMetadata(that.sensor.id, that.binFile.name, version , url);
         })
+      });
+    },
+    changeSystemStatus( running ) {
+      var dbRef = firebase.database().ref(this.sensor.id +'/TRACK_POSITION/STATUS');
+      var metadata = {
+        running: running,
+      };
+      let that = this;
+
+      dbRef.set(metadata).then(function() {
+        that.snack(running ? 'success' : 'error')
+        that.alert = { text: "Indoor Positioning System",
+                       secondaryText: running ? 'Started' : 'Stopped' }
+      })
+      .catch(function(error) {
+        console.log("Error: " + error.message);
       });
     },
     scanFirebase( room, running ) {
