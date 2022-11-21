@@ -184,10 +184,13 @@ void scanRoom(String roomName) {
 void setInitialValues(void) {
   hostString = String(WIFI_getChipId(), HEX);
   hostString.toUpperCase();
+
+  json.set("/SCAN/STATUS/running", false);
+  json.set("/TRACK_POSITION/STATUS/running", false);
   
-  json.set("STATUS/running", false);
-  Serial.printf("Saving to FirebaseDB... %s\n", Firebase.updateNode(fbdo, "/"+hostString+"/SCAN/", json) ? "ok" : fbdo.errorReason().c_str());
-  json.remove("STATUS");
+  Serial.printf("Saving to FirebaseDB... %s\n", Firebase.updateNode(fbdo, "/"+hostString, json) ? "ok" : fbdo.errorReason().c_str());
+  json.remove("SCAN");
+  json.remove("TRACK_POSITION");
   
   FirebaseJson jVal;
   FirebaseJsonData resultFilename, resultVersion;
