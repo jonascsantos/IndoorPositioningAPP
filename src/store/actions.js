@@ -1,5 +1,6 @@
 // https://vuex.vuejs.org/en/actions.html
 import firebase from '@/utils/firebase'
+import axios from 'axios'
 
 export default {
   fetchNewSensors ({ commit, dispatch }) {
@@ -68,6 +69,21 @@ export default {
           dataArray = dataArray.map(({ data: data, ...rest }) => ({ data, ...rest })).map(data => (data.data))
           scanArray = scanArray.concat(dataArray) 
         })
+        // console.log(scanArray)
+        // console.log(scanArray.join(''))
+
+        axios.post('https://api.jonascsantos.com/items/', {
+            "name": "Foo",
+            "description": JSON.stringify(scanArray),
+            "price": 45.2,
+            "tax": 3.5
+        })
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
 
         if (window) {
           window.navigator.clipboard.writeText(scanArray.join(''));
