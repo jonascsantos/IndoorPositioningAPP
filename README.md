@@ -7,7 +7,7 @@ Possible applications are: Blind people audible assistance, Museus, Exhibitions,
 # Links
 
 - Indoor Positioning App | [https://indoor.jonascsantos.com](https://indoor.jonascsantos.com)
-- Indoor Positioning API | [https://api.jonascsantos.com]([https://api.jonascsantos.com)
+- Indoor Positioning API | [https://api.jonascsantos.com](https://api.jonascsantos.com)
 
 # Used Technologies
 
