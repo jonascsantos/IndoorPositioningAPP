@@ -1,0 +1,6 @@
+[submodule "IndoorPositioningAzureAPIasdasd/IndoorPositioningAzureAPI"]
+	path = IndoorPositioningAzureAPIasdasd/IndoorPositioningAzureAPI
+	url = git@github.com:jonascsantos/IndoorPositioningAzureAPI.git
+[submodule "IndoorPositioningAzureAPI"]
+	path = IndoorPositioningAzureAPI
+	url = git@github.com:jonascsantos/IndoorPositioningAzureAPI.git
