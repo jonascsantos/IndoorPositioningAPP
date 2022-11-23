@@ -1,0 +1,8 @@
+venv/
+env/
+.cache
+.docker
+.dockerignore
+*.pyc
+*.pyo
+*.oyd
