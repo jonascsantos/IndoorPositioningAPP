@@ -72,11 +72,9 @@ export default {
         // console.log(scanArray)
         // console.log(scanArray.join(''))
 
-        axios.post('https://api.jonascsantos.com/items/', {
-            "name": "Foo",
-            "description": JSON.stringify(scanArray),
-            "price": 45.2,
-            "tax": 3.5
+        // axios.post('https://api.jonascsantos.com/items/', {
+        axios.post('http://localhost:8500/ai-generate/', {
+            "scanSamples": JSON.stringify(scanArray),
         })
         .then(function (response) {
           console.log(response);
