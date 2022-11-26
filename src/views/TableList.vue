@@ -155,7 +155,32 @@
                   class="white--text"
                   @click="uploadFile"
                 >
-                  Upload
+                  Upload .bin File
+                  <v-icon
+                    right
+                    dark 
+                  >
+                    mdi-cloud-upload
+                  </v-icon>
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+             <v-card>
+              <v-card-title primary class="title">
+                Add Arduino File
+              </v-card-title>
+              
+              <v-card-text> 
+                <input type="file" @change="addInoFile" ref="file">
+              </v-card-text>
+              
+              <v-card-actions>
+                <v-btn
+                  color="blue-grey"
+                  class="white--text"
+                  @click="uploadInoFile"
+                >
+                  Upload Ino File
                   <v-icon
                     right
                     dark 
@@ -257,6 +282,8 @@ export default {
     indoorPositioningSytem: false,
     currentFirmwareFilename: '',
     currentFirmwareVersion: '',
+    currentInoFilename: '',
+    currentInoVersion: '',
     roomRules: [
       v => !!v || 'Room name is required'
     ],
@@ -422,7 +449,25 @@ export default {
 
       storageRef.put(this.binFile).then(function(snapshot) {
         storageRef.getDownloadURL().then(function(url) {
-          that.saveMetadata(that.sensor.id, that.binFile.name, version , url);
+          that.saveMetadata('/FIRMWARE/WifiScan', that.sensor.id, that.binFile.name, version , url);
+        })
+      });
+    },
+    addInoFile() {
+      this.inoFile = this.$refs.file.files[0];
+    },
+    uploadInoFile() {
+      const storageRef = firebase.storage().ref().child("WifiScanInoFile");
+
+      let that = this;
+
+      let version = this.currentInoVersion && !isNaN(this.currentInoVersion) && 
+                    this.currentInoFilename === this.inoFile.name  ? 
+                      (+this.currentInoVersion + 1).toString() : "1"
+
+      storageRef.put(this.inoFile).then(function(snapshot) {
+        storageRef.getDownloadURL().then(function(url) {
+          that.saveMetadata('/FIRMWARE/WifiScanIno',that.sensor.id, that.inoFile.name, version , url);
         })
       });
     },
@@ -459,8 +504,8 @@ export default {
         console.log("Error: " + error.message);
       });
     },
-    saveMetadata( sensorName, filename, version, url) {
-      var dbRef = firebase.database().ref(sensorName +'/FIRMWARE/WifiScan');
+    saveMetadata( path, sensorName, filename, version, url) {
+      var dbRef = firebase.database().ref(sensorName + path);
       var metadata = {
         filename: filename,
         url: url,

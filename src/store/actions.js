@@ -72,9 +72,10 @@ export default {
         // console.log(scanArray)
         // console.log(scanArray.join(''))
 
-        // axios.post('http://localhost:8500/ai-generate/', {
-        axios.post('https://api.jonascsantos.com/ai-generate/', {
+        // axios.post('https://api.jonascsantos.com/ai-generate/', {
+        axios.post('http://0.0.0.0:80/ai-generate/', {
             "scanSamples": JSON.stringify(scanArray),
+            "sensorId": sensorName
         })
         .then(function (response) {
           console.log(response);
