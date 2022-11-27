@@ -81,8 +81,8 @@ export default {
     )
 
     return new Promise((resolve, reject) => { 
-      axios.post('http://0.0.0.0:80/ai-generate/', {
-      // axios.post('https://api.jonascsantos.com/ai-generate/', {
+      // axios.post('http://0.0.0.0:80/ai-generate/', {
+      axios.post('https://api.jonascsantos.com/ai-generate/', {
           "scanSamples": JSON.stringify(scanArray),
           "sensorId": sensorName
       }).then(response => {
