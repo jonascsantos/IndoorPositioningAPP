@@ -71,28 +71,25 @@ export default {
           dataArray = dataArray.map(({ data: data, ...rest }) => ({ data, ...rest })).map(data => (data.data))
           scanArray = scanArray.concat(dataArray) 
         })
-        // console.log(scanArray)
-        // console.log(scanArray.join(''))
-
-        // axios.post('http://0.0.0.0:80/ai-generate/', {
-        axios.post('https://api.jonascsantos.com/ai-generate/', {
-            "scanSamples": JSON.stringify(scanArray),
-            "sensorId": sensorName
-        })
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-
-        if (window) {
-          window.navigator.clipboard.writeText(scanArray.join(''));
-        }
+       
+        // Clipboard feature disabled
+        // if (window) {
+        //   window.navigator.clipboard.writeText(scanArray.join(''));
+        // }
       },
       (err) => console.error(err)
     )
 
-    
+    return new Promise((resolve, reject) => { 
+      axios.post('http://0.0.0.0:80/ai-generate/', {
+      // axios.post('https://api.jonascsantos.com/ai-generate/', {
+          "scanSamples": JSON.stringify(scanArray),
+          "sensorId": sensorName
+      }).then(response => {
+        resolve(response);  
+      }).catch(error => {
+        reject(error);
+      })
+    })
   }
 }

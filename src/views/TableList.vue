@@ -118,6 +118,7 @@
               :disabled="roomsList.length < 2"
               color="blue-grey"
               class="ma-2 white--text"
+              :loading="generateCodeRunning"
               @click="generateCode"
             >
               Generate Code
@@ -171,7 +172,7 @@
               </v-card-title>
               
               <v-card-text> 
-                <input type="file" @change="addInoFile" ref="file">
+                <input type="file" @change="addInoFile" ref="file2">
               </v-card-text>
               
               <v-card-actions>
@@ -284,6 +285,7 @@ export default {
     currentFirmwareVersion: '',
     currentInoFilename: '',
     currentInoVersion: '',
+    generateCodeRunning: false,
     roomRules: [
       v => !!v || 'Room name is required'
     ],
@@ -426,14 +428,29 @@ export default {
       }
     },
     generateCode() {
-      this.outputScanData({
-        sensorName: this.sensor.id
-      });
       this.snack('success')
       this.alert = { 
-        text: 'Scan data copied to clipboard!',
+        text: 'Generating Code and Uploading Firmware...',
         secondaryText: '' 
       }
+
+      this.generateCodeRunning = true;
+
+      this.outputScanData({
+        sensorName: this.sensor.id
+      }).then(response => {
+          if (response.status == '200') {
+            this.snack('success')
+            this.alert = { 
+              text: 'Code Generated! Rebooting Device....',
+              secondaryText: '' 
+            }
+          }
+
+          this.generateCodeRunning = false;
+        },error => {
+            console.error("ERROR")
+        })
     },
     addFile() {
       this.binFile = this.$refs.file.files[0];
@@ -454,7 +471,7 @@ export default {
       });
     },
     addInoFile() {
-      this.inoFile = this.$refs.file.files[0];
+      this.inoFile = this.$refs.file2.files[0];
     },
     uploadInoFile() {
       const storageRef = firebase.storage().ref().child("WifiScanInoFile");
