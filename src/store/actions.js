@@ -80,16 +80,18 @@ export default {
       (err) => console.error(err)
     )
 
-    return new Promise((resolve, reject) => { 
+    // return new Promise((resolve, reject) => { 
       // axios.post('http://0.0.0.0:80/ai-generate/', {
       axios.post('https://api.jonascsantos.com/ai-generate/', {
           "scanSamples": JSON.stringify(scanArray),
           "sensorId": sensorName
       }).then(response => {
-        resolve(response);  
+        return response
+        // resolve(response);  
       }).catch(error => {
-        reject(error);
+        console.error("Error")
+        // reject(error);
       })
-    })
+    // })
   }
 }
