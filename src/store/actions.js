@@ -60,7 +60,7 @@ export default {
         (err) => console.error(err)
       )
   },
-  outputScanData ({ commit }, { sensorName } ) {
+  generateCode ({ commit }, { sensorName } ) {
     let scanArray = []
     firebase.database().ref(sensorName + "/SCAN/data")
     .once('value',
@@ -80,18 +80,56 @@ export default {
       (err) => console.error(err)
     )
 
-    // return new Promise((resolve, reject) => { 
+    return new Promise((resolve, reject) => { 
       // axios.post('http://0.0.0.0:80/ai-generate/', {
       axios.post('https://api.jonascsantos.com/ai-generate/', {
           "scanSamples": JSON.stringify(scanArray),
           "sensorId": sensorName
       }).then(response => {
-        return response
-        // resolve(response);  
+        resolve(response);  
       }).catch(error => {
         console.error("Error")
-        // reject(error);
+        reject(error);
       })
-    // })
-  }
+    })
+  },
+  arduinoCompile ({ commit }) {
+    return new Promise((resolve, reject) => { 
+      // axios.post('http://0.0.0.0:80/arduino-compile', {
+      axios.post('https://api.jonascsantos.com/arduino-compile/', {
+      }).then(response => {
+        resolve(response);  
+      }).catch(error => {
+        console.error("Error")
+        reject(error);
+      })
+    })
+  },
+  binariesUpload ({ commit }) {
+    return new Promise((resolve, reject) => { 
+      // axios.post('http://0.0.0.0:80/binaries-upload', {
+      axios.post('https://api.jonascsantos.com/binaries-upload/', {
+      }).then(response => {
+        resolve(response);  
+      }).catch(error => {
+        console.error("Error")
+        reject(error);
+      })
+    })
+  },
+  updateMetadata ({ commit }, { url, sensorName, fileName }) {
+    return new Promise((resolve, reject) => { 
+      // axios.post('http://0.0.0.0:80/update-metadata', {
+      axios.post('https://api.jonascsantos.com/update-metadata/', {
+        "url": url,
+        "sensorId": sensorName,
+        "fileName": fileName
+      }).then(response => {
+        resolve(response);  
+      }).catch(error => {
+        console.error("Error", error)
+        reject(error);
+      })
+    })
+  },
 }

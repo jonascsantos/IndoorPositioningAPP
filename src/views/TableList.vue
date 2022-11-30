@@ -119,7 +119,7 @@
               color="blue-grey"
               class="ma-2 white--text"
               :loading="generateCodeRunning"
-              @click="generateCode"
+              @click="generateCodeButton"
             >
               Generate Code
               <v-icon
@@ -387,7 +387,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['outputScanData']),
+    ...mapActions(['generateCode', 'arduinoCompile', 'binariesUpload', 'updateMetadata']),
 
     timestampToDate( timestamp ) {
       if (!timestamp) {
@@ -427,7 +427,7 @@ export default {
         this.scanFirebase(this.room, false);
       }
     },
-    generateCode() {
+    async generateCodeButton() {
       this.snack('success')
       this.alert = { 
         text: 'Generating Code and Uploading Firmware...',
@@ -436,21 +436,30 @@ export default {
 
       this.generateCodeRunning = true;
 
-      this.outputScanData({
+      const responseGenerateCode = await this.generateCode({
         sensorName: this.sensor.id
-      }).then(response => {
-          if (response.status == '200') {
-            this.snack('success')
-            this.alert = { 
-              text: 'Code Generated! Rebooting Device....',
-              secondaryText: '' 
-            }
-          }
+      })
+      
+      if (responseGenerateCode.status =='200') {
+        this.snack('success')
+        this.alert = { 
+          text: 'Code being generated and uploaded! Please wait...',
+          secondaryText: '' 
+        }
+      }
+      const responseCompile = await this.arduinoCompile()
 
-          this.generateCodeRunning = false;
-        },error => {
-            console.error("ERROR")
-        })
+      const responseBinariesUpload = await this.binariesUpload();
+
+      const responseUpdateMetadata = await this.updateMetadata({ 
+                                                  url: responseBinariesUpload.data.url, 
+                                                  sensorName: this.sensor.id,
+                                                  fileName: responseBinariesUpload.data.fileName 
+                                            });
+
+      if (responseUpdateMetadata) {
+        this.generateCodeRunning = false;
+      }
     },
     addFile() {
       this.binFile = this.$refs.file.files[0];
