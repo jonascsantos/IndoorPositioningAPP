@@ -7,7 +7,7 @@ export default {
     firebase.database().ref().orderByKey().on("child_added", function(snapshot) {
       const value = snapshot.val();
 
-      if (snapshot.key !== 'StandardArduinoFile'){
+      if (snapshot.key !== 'StandardArduinoFile' && snapshot.key !== 'SCAN' ){
         commit('newSensor', { sensorName : snapshot.key, board : value.FIRMWARE.board })
         dispatch('fetchSensor', snapshot.key);
       }
@@ -26,7 +26,7 @@ export default {
         (err) => console.error(err)
       )
     
-    firebase.database().ref(sensorName + "/SCAN/data")
+    firebase.database().ref("/SCAN/data")
       .on('child_added',
         (snapshot) => {
           const name = snapshot.key;
@@ -38,7 +38,7 @@ export default {
         (err) => console.error(err)
       )
 
-    firebase.database().ref(sensorName + "/SCAN/data")
+    firebase.database().ref("/SCAN/data")
       .on('child_removed',
         (snapshot) => {
           const name = snapshot.key;
@@ -50,7 +50,7 @@ export default {
       )
   },
   fetchScannedRoom ({ commit }, { sensorName, roomName} ) {
-    firebase.database().ref(sensorName + "/SCAN/data/" + roomName)
+    firebase.database().ref("/SCAN/data/" + roomName)
       .on('value',
         (snapshot) => {
           const value = snapshot.val();
@@ -68,7 +68,7 @@ export default {
     const sensorsList = getters.sensorsAsArray
 
     sensorsList.forEach(sensor => {
-      firebase.database().ref(sensor.id + "/SCAN/data")
+      firebase.database().ref("/SCAN/data")
       .once('value',
         (snapshot) => {
           snapshot.forEach(function(childSnapshot) {
@@ -83,8 +83,8 @@ export default {
     });
 
     return new Promise((resolve, reject) => { 
-      // axios.post('http://0.0.0.0:80/ai-generate/', {
-      axios.post('https://api.jonascsantos.com/ai-generate/', {
+      const url = process.env.NODE_ENV === 'development' ? 'http://0.0.0.0:80/ai-generate/' : 'https://api.jonascsantos.com/ai-generate/'
+      axios.post(url, {
           "scanSamples": JSON.stringify(scanArray),
           "sensorId": sensorName,
           "board": board
@@ -98,8 +98,8 @@ export default {
   },
   arduinoCompile ({ commit }, { board, sensorId }) {
     return new Promise((resolve, reject) => { 
-      // axios.post('http://0.0.0.0:80/arduino-compile', {
-      axios.post('https://api.jonascsantos.com/arduino-compile/', {
+      const url = process.env.NODE_ENV === 'development' ? 'http://0.0.0.0:80/arduino-compile/' : 'https://api.jonascsantos.com/arduino-compile/'
+      axios.post(url, {
         "boardName": board,
         "sensorId": sensorId
       }).then(response => {
@@ -112,8 +112,8 @@ export default {
   },
   binariesUpload ({ commit }) {
     return new Promise((resolve, reject) => { 
-      // axios.post('http://0.0.0.0:80/binaries-upload', {
-      axios.post('https://api.jonascsantos.com/binaries-upload/', {
+      const url = process.env.NODE_ENV === 'development' ? 'http://0.0.0.0:80/binaries-upload/' : 'https://api.jonascsantos.com/binaries-upload/'
+      axios.post(url, {
       }).then(response => {
         resolve(response);  
       }).catch(error => {
@@ -123,10 +123,9 @@ export default {
     })
   },
   updateMetadata ({ commit }, { url, sensorName, fileName }) {
-    debugger;
     return new Promise((resolve, reject) => { 
-      // axios.post('http://0.0.0.0:80/update-metadata', {
-      axios.post('https://api.jonascsantos.com/update-metadata/', {
+      const postUrl = process.env.NODE_ENV === 'development' ? 'http://0.0.0.0:80/update-metadata/' : 'https://api.jonascsantos.com/update-metadata/'
+      axios.post(postUrl, {
         "url": url,
         "sensorId": sensorName,
         "fileName": fileName
