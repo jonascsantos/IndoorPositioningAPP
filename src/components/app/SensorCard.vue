@@ -115,7 +115,6 @@ export default {
             const value = snapshot.val();
             if (value && value.running) {
               this.indoorPositioningSytem = true;
-              this.room = value.room
             } else {
               this.indoorPositioningSytem = false;
             }

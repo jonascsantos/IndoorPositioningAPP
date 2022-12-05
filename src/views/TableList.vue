@@ -476,8 +476,6 @@ export default {
 
       const responseBinariesUpload = await this.binariesUpload();
 
-      debugger;
-
       const responseUpdateMetadata = await this.updateMetadata({ 
         url: responseBinariesUpload.data.url, 
         sensorName: responseCompile.data,
@@ -541,7 +539,6 @@ export default {
       });
     },
     scanFirebase( room, running ) {
-      //TODO - SENSOR DEPEDENCY
       var dbRef = firebase.database().ref(this.sensor.id +'/SCAN/STATUS');
       var metadata = {
         running: running,
@@ -573,8 +570,7 @@ export default {
       });
     },
     deleteRoom( roomName ) {
-      //TODO - REMOVE SENSOR DEPENDENCY
-      var dbRef = firebase.database().ref(this.sensor.id +'/SCAN/data/' + roomName);
+      var dbRef = firebase.database().ref('/SCAN/data/' + roomName);
       
       let that = this
       
