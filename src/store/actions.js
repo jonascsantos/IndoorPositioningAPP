@@ -5,8 +5,10 @@ import axios from 'axios'
 export default {
   fetchNewSensors ({ commit, dispatch }) {
     firebase.database().ref().orderByKey().on("child_added", function(snapshot) {
+      const value = snapshot.val();
+
       if (snapshot.key !== 'StandardArduinoFile'){
-        commit('newSensor', { sensorName : snapshot.key })
+        commit('newSensor', { sensorName : snapshot.key, board : value.FIRMWARE.board })
         dispatch('fetchSensor', snapshot.key);
       }
     });
@@ -60,31 +62,32 @@ export default {
         (err) => console.error(err)
       )
   },
-  generateCode ({ commit }, { sensorName } ) {
+  generateCode ({ commit, getters }, { board, sensorName } ) {
     let scanArray = []
-    firebase.database().ref(sensorName + "/SCAN/data")
-    .once('value',
-      (snapshot) => {
-        snapshot.forEach(function(childSnapshot) {
-          const childData = childSnapshot.val();
-          let dataArray = _.map(childData)
-          dataArray = dataArray.map(({ data: data, ...rest }) => ({ data, ...rest })).map(data => (data.data))
-          scanArray = scanArray.concat(dataArray) 
-        })
-       
-        // Clipboard feature disabled
-        // if (window) {
-        //   window.navigator.clipboard.writeText(scanArray.join(''));
-        // }
-      },
-      (err) => console.error(err)
-    )
+
+    const sensorsList = getters.sensorsAsArray
+
+    sensorsList.forEach(sensor => {
+      firebase.database().ref(sensor.id + "/SCAN/data")
+      .once('value',
+        (snapshot) => {
+          snapshot.forEach(function(childSnapshot) {
+            const childData = childSnapshot.val();
+            let dataArray = _.map(childData)
+            dataArray = dataArray.map(({ data: data, ...rest }) => ({ data, ...rest })).map(data => (data.data))
+            scanArray = scanArray.concat(dataArray) 
+          })
+        },
+        (err) => console.error(err)
+      )
+    });
 
     return new Promise((resolve, reject) => { 
       // axios.post('http://0.0.0.0:80/ai-generate/', {
       axios.post('https://api.jonascsantos.com/ai-generate/', {
           "scanSamples": JSON.stringify(scanArray),
-          "sensorId": sensorName
+          "sensorId": sensorName,
+          "board": board
       }).then(response => {
         resolve(response);  
       }).catch(error => {
@@ -93,10 +96,12 @@ export default {
       })
     })
   },
-  arduinoCompile ({ commit }) {
+  arduinoCompile ({ commit }, { board, sensorId }) {
     return new Promise((resolve, reject) => { 
       // axios.post('http://0.0.0.0:80/arduino-compile', {
       axios.post('https://api.jonascsantos.com/arduino-compile/', {
+        "boardName": board,
+        "sensorId": sensorId
       }).then(response => {
         resolve(response);  
       }).catch(error => {
@@ -118,6 +123,7 @@ export default {
     })
   },
   updateMetadata ({ commit }, { url, sensorName, fileName }) {
+    debugger;
     return new Promise((resolve, reject) => { 
       // axios.post('http://0.0.0.0:80/update-metadata', {
       axios.post('https://api.jonascsantos.com/update-metadata/', {

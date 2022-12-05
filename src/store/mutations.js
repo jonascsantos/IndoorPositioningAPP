@@ -20,10 +20,11 @@ export default {
   deleteScannedRoomData (state, payload ) {
     Vue.delete(state.rooms, payload.roomName)
   },
-  newSensor (state, { sensorName }) {
+  newSensor (state, { sensorName, board }) {
     Vue.set(state.sensors, sensorName, {
       id: sensorName,
       name: 'Device ' + sensorName,
+      board: board,
       position: {lat:-9.458305, lng:-40.489484},
       readings: [],
       status: 0

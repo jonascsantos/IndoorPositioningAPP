@@ -143,6 +143,10 @@
               </v-card-title>
               
               <v-card-text> 
+                Board: {{board}}
+              </v-card-text>
+
+              <v-card-text> 
                 Version {{currentFirmware.version}}
               </v-card-text>
               
@@ -283,6 +287,7 @@ export default {
     indoorPositioningSytem: false,
     currentFirmwareFilename: '',
     currentFirmwareVersion: '',
+    board: '',
     currentInoFilename: '',
     currentInoVersion: '',
     generateCodeRunning: false,
@@ -363,16 +368,31 @@ export default {
     },
     currentFirmware() {
       if (this.sensor) {
-        var dbRef = firebase.database()
+        let dbRef = firebase.database()
           .ref(this.sensor.id +'/FIRMWARE/CurrentFirmware')
           .on('value',(snapshot) => {
             const value = snapshot.val();
-            if (value && ((value.filename != this.currentFirmwareFilename) ||
-                           value.version != this.currentFirmwareVersion)) {
+            if (value && value.version && value.filename) {
               this.currentFirmwareVersion = value.version;
               this.currentFirmwareFilename = value.filename;
-              
-            } 
+            } else {
+              this.currentFirmwareVersion = "";
+              this.currentFirmwareFilename = ""
+            }
+          },
+            (err) => console.error(err)
+          )
+
+
+        let dbRefBoard = firebase.database()
+          .ref(this.sensor.id +'/FIRMWARE/board')
+          .on('value',(snapshot) => {
+            const value = snapshot.val();
+            if (value) {
+              this.board = value;
+            } else {
+              this.board = ""
+            }
           },
             (err) => console.error(err)
           )
@@ -437,6 +457,7 @@ export default {
       this.generateCodeRunning = true;
 
       const responseGenerateCode = await this.generateCode({
+        board:  this.sensor.board,
         sensorName: this.sensor.id
       })
       
@@ -447,15 +468,21 @@ export default {
           secondaryText: '' 
         }
       }
-      const responseCompile = await this.arduinoCompile()
+
+      const responseCompile = await this.arduinoCompile({
+        board: responseGenerateCode.data.board,
+        sensorId: responseGenerateCode.data.sensorId
+      });
 
       const responseBinariesUpload = await this.binariesUpload();
 
+      debugger;
+
       const responseUpdateMetadata = await this.updateMetadata({ 
-                                                  url: responseBinariesUpload.data.url, 
-                                                  sensorName: this.sensor.id,
-                                                  fileName: responseBinariesUpload.data.fileName 
-                                            });
+        url: responseBinariesUpload.data.url, 
+        sensorName: responseCompile.data,
+        fileName: responseBinariesUpload.data.fileName 
+      });
 
       if (responseUpdateMetadata) {
         this.generateCodeRunning = false;
@@ -514,6 +541,7 @@ export default {
       });
     },
     scanFirebase( room, running ) {
+      //TODO - SENSOR DEPEDENCY
       var dbRef = firebase.database().ref(this.sensor.id +'/SCAN/STATUS');
       var metadata = {
         running: running,
@@ -545,6 +573,7 @@ export default {
       });
     },
     deleteRoom( roomName ) {
+      //TODO - REMOVE SENSOR DEPENDENCY
       var dbRef = firebase.database().ref(this.sensor.id +'/SCAN/data/' + roomName);
       
       let that = this
