@@ -450,7 +450,7 @@ export default {
     async generateCodeButton() {
       this.snack('success')
       this.alert = { 
-        text: 'Generating Code and Uploading Firmware...',
+        text: 'Generating Code..',
         secondaryText: '' 
       }
 
@@ -464,7 +464,7 @@ export default {
       if (responseGenerateCode.status =='200') {
         this.snack('success')
         this.alert = { 
-          text: 'Code being generated and uploaded! Please wait...',
+          text: 'Code generated. Compilation started..(2 min)',
           secondaryText: '' 
         }
       }
@@ -483,6 +483,12 @@ export default {
       });
 
       if (responseUpdateMetadata) {
+        this.snack('success')
+        this.alert = { 
+          text: 'Compilation complete. Uploading firmware..(1 min)',
+          secondaryText: '' 
+        }
+
         this.generateCodeRunning = false;
       }
     },
