@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> dbe6428087ba866fb5051a8a46b3085ff5cc5f6a
 import firebase from 'firebase'
 import "firebase/storage";
 
