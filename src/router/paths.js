@@ -17,7 +17,7 @@ export default [
   },
   {
     path: '/table-list/:sensorId',
-    name: 'Historical Data',
+    name: 'Device Settings',
     view: 'TableList',
     props: true
   },

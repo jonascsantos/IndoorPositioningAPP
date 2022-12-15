@@ -2,7 +2,7 @@ import firebase from 'firebase'
 import "firebase/storage";
 
 export const config = {
-  apiKey: 'AIzaSyC6h2tKVluciekxZyoOepJNd03jVIYNgKA',
+  apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
   authDomain: 'flowsensor-bfbed.firebaseapp.com',
   databaseURL: 'https://flowsensor-bfbed.firebaseio.com',
   projectId: 'flowsensor-bfbed',
@@ -19,4 +19,9 @@ if (firebase.apps && firebase.apps.length > 0) {
   firebaseApp = firebase.initializeApp(config)
 }
 
-export default firebaseApp
+export default firebaseApp 
+
+
+
+
+
